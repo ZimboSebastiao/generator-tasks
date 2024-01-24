@@ -36,8 +36,8 @@ const TaskGene = () => {
         // Definir o endpoint da API do OpenAI para o ChatGPT 3.5
         const url = "https://api.openai.com/v1/chat/completions";
         const headers = {
-           Authorization: "Bearer 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",
-        };
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      };
 
         // Criar a conversa dinamicamente com base nas informações do usuário
         const conversation = [
