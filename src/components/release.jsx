@@ -172,14 +172,6 @@ const TaskGene = () => {
     setAddButtonDisabled(false);
   };
 
-  // Função para excluir todos os formulários, exceto o primeiro
-  const deleteAllFormsExceptFirst = () => {
-    if (forms.length > 1) {
-      setForms([forms[0]]);
-      setAddButtonDisabled(false);
-    }
-  };
-
   return (
     <>
       <StyledTask>
@@ -198,13 +190,6 @@ const TaskGene = () => {
               isDisabled={isAddButtonDisabled}
             >
               Adicionar Formulário
-            </Button>
-            <Button
-              color="error"
-              type="button"
-              onClick={deleteAllFormsExceptFirst}
-            >
-              Excluir Todos Exceto Primeiro
             </Button>
           </div>
           {forms.map((form, index) => (

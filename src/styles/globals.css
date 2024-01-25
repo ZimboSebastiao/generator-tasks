@@ -13,7 +13,7 @@
   --cor-primaria-fundo-hover: #030226;
   --cor-primaria: #f2f2f2;
   --cor-primaria-hover: #ebebeb;
-  --cor-secundaria-fundo: #66d4ff;
+  --cor-secundaria-fundo: #ffffff;
   --cor-secundaria-fundo-hover: #2f88a8;
   --cor-secundaria: #e4e3f2;
   --cor-secundaria-hover: #e2e2eb;
@@ -52,8 +52,9 @@ h2 {
   border-radius: var(--borda-arredondada);
 }
 .limitador {
-  width: 90%;
-  max-width: 1000px;
+  width: 100%;
+  max-width: 1400px;
   margin: auto;
   padding-bottom: 2rem;
+  /* background-color: #0b0a3f; */
 }
