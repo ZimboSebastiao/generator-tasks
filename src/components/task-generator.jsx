@@ -46,7 +46,7 @@ const TaskGene = () => {
         const url = "https://api.openai.com/v1/chat/completions";
         const headers = {
           Authorization:
-            "Bearer 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",
+            "Bearer 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",
         };
 
         const conversation = [
