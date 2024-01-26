@@ -22,14 +22,14 @@ const TaskGene = () => {
       task: "",
       info: "",
       response: "",
-      loading: false,
       error: "",
     },
   ]);
-
+  const [loading, setLoading] = useState(false);
   const [isAddButtonDisabled, setAddButtonDisabled] = useState(false);
   // Estado para armazenar as respostas globalmente
   const [globalResponses, setGlobalResponses] = useState([]);
+  const [error, setError] = useState("");
 
   // Função para copiar texto para a área de transferência
   const copyToClipboard = (text) => {
@@ -43,10 +43,11 @@ const TaskGene = () => {
       const { team, type, task, info } = currentForm;
 
       if (team && type && task && info) {
+        setError("");
         const url = "https://api.openai.com/v1/chat/completions";
         const headers = {
           Authorization:
-            "Bearer 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",
+            "Bearer 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",
         };
 
         const conversation = [
@@ -56,6 +57,9 @@ const TaskGene = () => {
             content: generateUserContent(currentForm),
           },
         ];
+
+        setLoading(true);
+        setError("");
 
         const response = await axios.post(
           url,
@@ -72,7 +76,6 @@ const TaskGene = () => {
         const updatedForms = [...forms];
         updatedForms[index] = {
           ...currentForm,
-          loading: false,
           response: formattedSections,
         };
         setForms(updatedForms);
@@ -87,9 +90,9 @@ const TaskGene = () => {
         updatedForms[index] = {
           ...currentForm,
           error: "Por favor, preencha todos os campos.",
-          loading: false,
         };
         setForms(updatedForms);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Erro ao gerar tarefa:", error);
@@ -101,17 +104,18 @@ const TaskGene = () => {
       };
       setForms(updatedForms);
     }
+    setLoading(false);
   };
 
   const generateUserContent = (form) => {
     const { task, type, info, team } = form;
     let userContent = "";
     if (task === "Task" || task === "Melhoria") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info} descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Descrição do Problema, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (${team} - [${type}] + o titulo sobre a tarefa, faça títulos criativos).`;
+      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info} descrevendo as seguintes informações como subtítulo: Título da tarefa, Descrição do Problema, Critério de Aceitação, Notas Adicionais. O título da tarefa deve ser montado seguindo este critério (${team} - [${type}] + o título sobre a tarefa, faça títulos criativos).`;
     } else if (task === "Bug") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Descrição do Problema, Cenário de Reprodução, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (${team} - [${type}] + o titulo sobre a tarefa, faça títulos criativos).`;
+      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Título da tarefa, Descrição do Problema, Cenário de Reprodução, Critério de Aceitação, Notas Adicionais. O título da tarefa deve ser montado seguindo este critério (${team} - [${type}] + o título sobre a tarefa, faça títulos criativos).`;
     } else if (task === "Test") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Objetivo, Passos Realizados, Resultados Observados, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (Caso de Teste - ${team} - [${type}] - Testar).`;
+      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Título da tarefa, Objetivo, Passos Realizados, Resultados Observados, Critério de Aceitação, Notas Adicionais. O título da tarefa deve ser montado seguindo este critério (Caso de Teste - ${team} - [${type}] - Testar).`;
     }
     return userContent;
   };
@@ -119,7 +123,7 @@ const TaskGene = () => {
   const formatResponse = (generatedText) => {
     // Dividir o texto gerado em seções com base nos subtítulos
     const sections = generatedText.split(
-      /\b(Titulo da tarefa|Descrição do Problema|Objetivo|Cenário de Reprodução|Passos Realizados|Resultados Observados|Critério de Aceitação|Notas Adicionais)\b/g
+      /\b(Título da tarefa|Descrição do Problema|Objetivo|Cenário de Reprodução|Passos Realizados|Resultados Observados|Critério de Aceitação|Notas Adicionais)\b/g
     );
 
     // Filtrar para remover strings vazias resultantes da divisão
@@ -152,7 +156,6 @@ const TaskGene = () => {
           task: "",
           info: "",
           response: "",
-          loading: false,
           error: "",
         },
       ]);
@@ -187,7 +190,7 @@ const TaskGene = () => {
           <h1>Gerador de Tarefa</h1>
           <span>
             Utilize este sistema para criar uma tarefa usando o OpenAI como
-            inteligência artificial que irá gerar respostas criativas e
+            inteligência artificial, que irá gerar respostas criativas e
             extensas.
           </span>
           <div>
@@ -307,8 +310,7 @@ const TaskGene = () => {
                     </Button>
                   </div>
                 )}
-
-                {form.loading && (
+                {loading && (
                   <Spinner
                     label="Carregando..."
                     color="warning"
