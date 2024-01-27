@@ -22,100 +22,106 @@ const TaskGene = () => {
       task: "",
       info: "",
       response: "",
+      loading: false,
       error: "",
     },
   ]);
+
   const [loading, setLoading] = useState(false);
   const [isAddButtonDisabled, setAddButtonDisabled] = useState(false);
   // Estado para armazenar as respostas globalmente
   const [globalResponses, setGlobalResponses] = useState([]);
-  const [error, setError] = useState("");
 
-  // Função para copiar texto para a área de transferência
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
+  // Função para verificar se todos os campos estão preenchidos
+  const areAllFieldsFilled = (form) => {
+    return form.team && form.type && form.task && form.info;
   };
 
+  // Função para verificar se o botão "Gerar Resposta" deve ser desativado
+  const shouldDisableGenerateButton = forms.some(
+    (form) => !areAllFieldsFilled(form)
+  );
+
   // Função para gerar a resposta da tarefa usando o ChatGPT 3.5
-  const generateTasks = async (index) => {
+  const generateTasks = async () => {
     try {
-      const currentForm = forms[index];
-      const { team, type, task, info } = currentForm;
+      const newForms = await Promise.all(
+        forms.map(async (currentForm) => {
+          const { team, type, task, info } = currentForm;
 
-      if (team && type && task && info) {
-        setError("");
-        const url = "https://api.openai.com/v1/chat/completions";
-        const headers = {
-          Authorization:
-            "Bearer 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",
-        };
+          if (team && type && task && info) {
+            setLoading(true);
+            const url = "https://api.openai.com/v1/chat/completions";
+            const headers = {
+              Authorization:
+                "Bearer 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",
+            };
 
-        const conversation = [
-          { role: "system", content: "You are a creative assistant." },
-          {
-            role: "user",
-            content: generateUserContent(currentForm),
-          },
-        ];
+            const conversation = [
+              { role: "system", content: "You are a creative assistant." },
+              {
+                role: "user",
+                content: generateUserContent(currentForm),
+              },
+            ];
 
-        setLoading(true);
-        setError("");
+            const response = await axios.post(
+              url,
+              {
+                model: "gpt-3.5-turbo",
+                messages: conversation,
+              },
+              { headers }
+            );
 
-        const response = await axios.post(
-          url,
-          {
-            model: "gpt-3.5-turbo",
-            messages: conversation,
-          },
-          { headers }
-        );
+            const generatedText = response.data.choices[0].message.content;
+            const formattedSections = formatResponse(generatedText);
 
-        const generatedText = response.data.choices[0].message.content;
-        const formattedSections = formatResponse(generatedText);
+            return {
+              ...currentForm,
+              loading: false,
+              response: formattedSections,
+            };
+          } else {
+            return {
+              ...currentForm,
+              error: "Por favor, preencha todos os campos.",
+              loading: false,
+            };
+          }
+        })
+      );
 
-        const updatedForms = [...forms];
-        updatedForms[index] = {
-          ...currentForm,
-          response: formattedSections,
-        };
-        setForms(updatedForms);
+      setForms(newForms);
+      setLoading(false);
 
-        // Atualizar o estado de respostas globais
-        setGlobalResponses((prevResponses) => [
-          ...prevResponses,
-          formattedSections,
-        ]);
-      } else {
-        const updatedForms = [...forms];
-        updatedForms[index] = {
-          ...currentForm,
-          error: "Por favor, preencha todos os campos.",
-        };
-        setForms(updatedForms);
-        setLoading(false);
-      }
+      // Atualizar o estado de respostas globais
+      const allResponses = newForms
+        .filter((form) => form.response)
+        .map((form) => form.response);
+
+      setGlobalResponses(allResponses.flat());
     } catch (error) {
       console.error("Erro ao gerar tarefa:", error);
-      const updatedForms = [...forms];
-      updatedForms[index] = {
-        ...updatedForms[index],
+      const updatedForms = forms.map((form) => ({
+        ...form,
         error: "Erro ao gerar tarefa. Por favor, tente novamente mais tarde.",
         loading: false,
-      };
+      }));
       setForms(updatedForms);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const generateUserContent = (form) => {
     const { task, type, info, team } = form;
     let userContent = "";
     if (task === "Task" || task === "Melhoria") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info} descrevendo as seguintes informações como subtítulo: Título da tarefa, Descrição do Problema, Critério de Aceitação, Notas Adicionais. O título da tarefa deve ser montado seguindo este critério (${team} - [${type}] + o título sobre a tarefa, faça títulos criativos).`;
+      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info} descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Descrição do Problema, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (${team} - [${type}] + o titulo sobre a tarefa, faça títulos criativos).`;
     } else if (task === "Bug") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Título da tarefa, Descrição do Problema, Cenário de Reprodução, Critério de Aceitação, Notas Adicionais. O título da tarefa deve ser montado seguindo este critério (${team} - [${type}] + o título sobre a tarefa, faça títulos criativos).`;
+      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Descrição do Problema, Cenário de Reprodução, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (${team} - [${type}] + o titulo sobre a tarefa, faça títulos criativos).`;
     } else if (task === "Test") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Título da tarefa, Objetivo, Passos Realizados, Resultados Observados, Critério de Aceitação, Notas Adicionais. O título da tarefa deve ser montado seguindo este critério (Caso de Teste - ${team} - [${type}] - Testar).`;
+      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Objetivo, Passos Realizados, Resultados Observados, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (Caso de Teste - ${team} - [${type}] - Testar).`;
     }
     return userContent;
   };
@@ -123,7 +129,7 @@ const TaskGene = () => {
   const formatResponse = (generatedText) => {
     // Dividir o texto gerado em seções com base nos subtítulos
     const sections = generatedText.split(
-      /\b(Título da tarefa|Descrição do Problema|Objetivo|Cenário de Reprodução|Passos Realizados|Resultados Observados|Critério de Aceitação|Notas Adicionais)\b/g
+      /\b(Titulo da tarefa|Descrição do Problema|Objetivo|Cenário de Reprodução|Passos Realizados|Resultados Observados|Critério de Aceitação|Notas Adicionais)\b/g
     );
 
     // Filtrar para remover strings vazias resultantes da divisão
@@ -134,11 +140,16 @@ const TaskGene = () => {
     // Mapear as seções formatadas para JSX
     const formattedSections = filteredSections.map((section, index) => {
       if (index % 2 === 0) {
-        // Se índice é par, então é um subtítulo
-        return <h3 key={index}>{section.trim()}</h3>;
+        // Se índice é par, e o subtítulo é "Titulo da Tarefa", então é um h2
+        if (section.trim() === "Titulo da tarefa") {
+          return <h2 key={index}>{section.trim()}</h2>;
+        } else {
+          // Para outros subtítulos, renderize como p
+          return <p key={index}>{section.trim()}</p>;
+        }
       } else {
         // Se índice é ímpar, então é um parágrafo
-        return <p key={index}>{section.trim()}</p>;
+        return <h3 key={index}>{section.trim()}</h3>;
       }
     });
 
@@ -147,7 +158,7 @@ const TaskGene = () => {
 
   // Função para duplicar o formulário
   const duplicateForm = () => {
-    if (forms.length < 4) {
+    if (forms.length < 2) {
       setForms([
         ...forms,
         {
@@ -156,12 +167,13 @@ const TaskGene = () => {
           task: "",
           info: "",
           response: "",
+          loading: false,
           error: "",
         },
       ]);
 
       // Desabilitar o botão após atingir o limite
-      if (forms.length === 3) {
+      if (forms.length === 1) {
         setAddButtonDisabled(true);
       }
     }
@@ -190,7 +202,7 @@ const TaskGene = () => {
           <h1>Gerador de Tarefa</h1>
           <span>
             Utilize este sistema para criar uma tarefa usando o OpenAI como
-            inteligência artificial, que irá gerar respostas criativas e
+            inteligência artificial que irá gerar respostas criativas e
             extensas.
           </span>
           <div>
@@ -203,11 +215,11 @@ const TaskGene = () => {
               Adicionar Formulário
             </Button>
             <Button
-              color="error"
+              color="danger"
               type="button"
               onClick={deleteAllFormsExceptFirst}
             >
-              Excluir Todos Exceto Primeiro
+              Excluir formulário
             </Button>
           </div>
           {forms.map((form, index) => (
@@ -292,7 +304,8 @@ const TaskGene = () => {
                     <Button
                       color="primary"
                       type="button"
-                      onClick={() => generateTasks(index)}
+                      onClick={generateTasks}
+                      isDisabled={shouldDisableGenerateButton}
                     >
                       Gerar Resposta
                     </Button>
@@ -317,7 +330,6 @@ const TaskGene = () => {
                     labelColor="warning"
                   />
                 )}
-                {form.error && <p className="error">{form.error}</p>}
               </form>
             </React.Fragment>
           ))}
@@ -374,11 +386,6 @@ const StyledTask = styled.section`
     content: " 📝 ";
   }
 
-  p {
-    font-weight: bold;
-    font-size: 1.5rem;
-    font-family: Inter;
-  }
   div h3:first-child {
     font-weight: bold;
     font-size: 1.7rem;
@@ -389,6 +396,13 @@ const StyledTask = styled.section`
     justify-content: center;
     width: 20%;
   }
+
+  /* .form-resp > div > p:first-child {
+  
+    font-size: 16px;
+    color: #cf2c2c;
+   
+  } */
 `;
 
 export default TaskGene;

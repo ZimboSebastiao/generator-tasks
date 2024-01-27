@@ -46,7 +46,7 @@ const TaskGene = () => {
         const url = "https://api.openai.com/v1/chat/completions";
         const headers = {
           Authorization:
-            "Bearer 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",
+            "Bearer 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",
         };
 
         const conversation = [
@@ -172,6 +172,14 @@ const TaskGene = () => {
     setAddButtonDisabled(false);
   };
 
+  // Função para excluir todos os formulários, exceto o primeiro
+  const deleteAllFormsExceptFirst = () => {
+    if (forms.length > 1) {
+      setForms([forms[0]]);
+      setAddButtonDisabled(false);
+    }
+  };
+
   return (
     <>
       <StyledTask>
@@ -190,6 +198,13 @@ const TaskGene = () => {
               isDisabled={isAddButtonDisabled}
             >
               Adicionar Formulário
+            </Button>
+            <Button
+              color="error"
+              type="button"
+              onClick={deleteAllFormsExceptFirst}
+            >
+              Excluir Todos Exceto Primeiro
             </Button>
           </div>
           {forms.map((form, index) => (
