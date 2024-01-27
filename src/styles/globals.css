@@ -21,7 +21,7 @@
   --borda-arredondada: 0.5rem;
 }
 html {
-  font-size: 16px;
+  font-size: 14px;
 }
 body {
   margin: 0;
@@ -45,15 +45,15 @@ h3 {
 
 h2 {
   margin: 1rem 0;
-  color: #262626;
-  background-color: #f7f7f7;
+  color: #ffffff;
+  background-color: #004493;
   padding: 1rem;
   box-shadow: var(--sombra-box);
   border-radius: var(--borda-arredondada);
 }
 .limitador {
-  width: 100%;
-  max-width: 1400px;
+  width: 90%;
+  max-width: 1000px;
   margin: auto;
   padding-bottom: 2rem;
   /* background-color: #0b0a3f; */

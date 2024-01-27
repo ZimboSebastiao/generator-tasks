@@ -5,7 +5,10 @@ import styled from "styled-components";
 import { Select, SelectItem } from "@nextui-org/react";
 import { Button } from "@nextui-org/react";
 import { Spinner } from "@nextui-org/react";
-import { Input } from "@nextui-org/react";
+import { PlusIcon } from "./PlusIcon";
+import { DeleteIcon } from "./DeleteIcon";
+import { Tooltip } from "@nextui-org/react";
+import { Textarea } from "@nextui-org/react";
 
 // Definir as opções para o usuário escolher
 const teams = ["Hermes", "Xtend", "Apollo"];
@@ -54,7 +57,7 @@ const TaskGene = () => {
             const url = "https://api.openai.com/v1/chat/completions";
             const headers = {
               Authorization:
-                "Bearer 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",
+                "Bearer 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",
             };
 
             const conversation = [
@@ -116,20 +119,24 @@ const TaskGene = () => {
   const generateUserContent = (form) => {
     const { task, type, info, team } = form;
     let userContent = "";
-    if (task === "Task" || task === "Melhoria") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info} descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Descrição do Problema, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (${team} - [${type}] + o titulo sobre a tarefa, faça títulos criativos).`;
+
+    if (task === "Task") {
+      userContent = `Crie uma nova ${task.toLowerCase()} para a ${type}:\n\nInformações da tarefa:\n${info}\n\nInclua os seguintes subtítulos:\n- Título da Tarefa: [Inclua um título criativo aqui]\n- Descrição do Problema\n- Critério de Aceitação\n- Notas Adicionais\n\nO título da tarefa deve seguir o critério: (${team} - [${type}] + título sobre a tarefa, faça títulos criativos).`;
     } else if (task === "Bug") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Descrição do Problema, Cenário de Reprodução, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (${team} - [${type}] + o titulo sobre a tarefa, faça títulos criativos).`;
+      userContent = `Crie um novo ${task.toLowerCase()} para a ${type}:\n\nInformações da tarefa:\n${info}\n\nInclua os seguintes subtítulos:\n- Título da Tarefa: [Inclua um título criativo aqui]\n- Descrição do Problema\n- Cenário de Reprodução\n- Critério de Aceitação\n- Notas Adicionais\n\nO título da tarefa deve seguir o critério: (${team} - [${type}] + título sobre a tarefa, faça títulos criativos).`;
     } else if (task === "Test") {
-      userContent = `Cria uma tarefa de ${task}, para o ${type}:\n\ninformações da tarefa: \n${info}  descrevendo as seguintes informações como subtítulo: Titulo da tarefa, Objetivo, Passos Realizados, Resultados Observados, Critério de Aceitação, Notas Adicionais. O titulo da tarefa deve ser montada seguindo este critério (Caso de Teste - ${team} - [${type}] - Testar).`;
+      userContent = `Crie um novo ${task.toLowerCase()} para a ${type}:\n\nInformações da tarefa:\n${info}\n\nInclua os seguintes subtítulos:\n- Título da Tarefa: [Inclua um título criativo aqui]\n- Objetivo\n- Passos Realizados\n- Resultados Observados\n- Notas Adicionais\n\nO título da tarefa deve seguir o critério: (${team} - [${type}] - Testar ...).`;
+    } else if (task === "Melhoria") {
+      userContent = `Crie uma nova ${task.toLowerCase()} para a ${type}:\n\nInformações da tarefa:\n${info}\n\nInclua os seguintes subtítulos:\n- Título da Tarefa: [Inclua um título criativo aqui]\n- Descrição do Problema\n- Critério de Aceitação\n- Notas Adicionais\n\nO título da tarefa deve seguir o critério: (${team} - [${type}] + título sobre a tarefa, faça títulos criativos).`;
     }
+
     return userContent;
   };
 
   const formatResponse = (generatedText) => {
     // Dividir o texto gerado em seções com base nos subtítulos
     const sections = generatedText.split(
-      /\b(Titulo da tarefa|Descrição do Problema|Objetivo|Cenário de Reprodução|Passos Realizados|Resultados Observados|Critério de Aceitação|Notas Adicionais)\b/g
+      /\b(Título da Tarefa: |Descrição do Problema|Objetivo|Cenário de Reprodução|Passos Realizados|Resultados Observados|Critério de Aceitação|Notas Adicionais)\b/g
     );
 
     // Filtrar para remover strings vazias resultantes da divisão
@@ -139,18 +146,17 @@ const TaskGene = () => {
 
     // Mapear as seções formatadas para JSX
     const formattedSections = filteredSections.map((section, index) => {
-      if (index % 2 === 0) {
-        // Se índice é par, e o subtítulo é "Titulo da Tarefa", então é um h2
-        if (section.trim() === "Titulo da tarefa") {
-          return <h2 key={index}>{section.trim()}</h2>;
-        } else {
-          // Para outros subtítulos, renderize como p
-          return <p key={index}>{section.trim()}</p>;
-        }
-      } else {
-        // Se índice é ímpar, então é um parágrafo
-        return <h3 key={index}>{section.trim()}</h3>;
-      }
+      const trimmedSection = section.trim();
+
+      // Se índice é par, e o subtítulo é "Título da Tarefa", então é um h2, senão, é um h3
+      const isHeading = index % 2 === 0;
+      const Element = isHeading
+        ? trimmedSection === "Título da Tarefa:"
+          ? "h2"
+          : "h3"
+        : "p";
+
+      return <Element key={index}>{trimmedSection}</Element>;
     });
 
     return formattedSections;
@@ -179,20 +185,23 @@ const TaskGene = () => {
     }
   };
 
-  // Função para excluir um formulário
-  const deleteForm = (index) => {
-    const updatedForms = [...forms];
-    updatedForms.splice(index, 1);
-    setForms(updatedForms);
-    setAddButtonDisabled(false);
-  };
+  // Função para limpar todos os formulários e respostas
+  const clearAll = () => {
+    setForms([
+      {
+        team: "",
+        type: "",
+        task: "",
+        info: "",
+        response: "",
+        loading: false,
+        error: "",
+      },
+    ]);
 
-  // Função para excluir todos os formulários, exceto o primeiro
-  const deleteAllFormsExceptFirst = () => {
-    if (forms.length > 1) {
-      setForms([forms[0]]);
-      setAddButtonDisabled(false);
-    }
+    setLoading(false);
+    setAddButtonDisabled(false);
+    setGlobalResponses([]);
   };
 
   return (
@@ -201,25 +210,27 @@ const TaskGene = () => {
         <div className="limitador">
           <h1>Gerador de Tarefa</h1>
           <span>
-            Utilize este sistema para criar uma tarefa usando o OpenAI como
+            Utilize este sistema para gerar tarefas usando o OpenAI como
             inteligência artificial que irá gerar respostas criativas e
-            extensas.
+            estruturadas.
           </span>
-          <div>
+          <div className="formart-botao   gap-2">
             <Button
               color="primary"
               type="button"
+              endContent={<PlusIcon />}
               onClick={duplicateForm}
               isDisabled={isAddButtonDisabled}
             >
-              Adicionar Formulário
+              Adicionar
             </Button>
-            <Button
-              color="danger"
-              type="button"
-              onClick={deleteAllFormsExceptFirst}
-            >
-              Excluir formulário
+            <Button color="warning" type="button" onClick={clearAll}>
+              Limpar
+              <Tooltip color="danger" content="Deletar Formulário">
+                <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                  <DeleteIcon />
+                </span>
+              </Tooltip>
             </Button>
           </div>
           {forms.map((form, index) => (
@@ -282,19 +293,17 @@ const TaskGene = () => {
                       </SelectItem>
                     ))}
                   </Select>
-
-                  <Input
+                  <Textarea
                     id={`info-${index}`}
                     value={form.info}
                     variant="faded"
-                    type="email"
                     label="Descrição"
                     onChange={(e) => {
                       const updatedForms = [...forms];
                       updatedForms[index].info = e.target.value;
                       setForms(updatedForms);
                     }}
-                    className="max-w-xs max-w-[560px]"
+                    className="max-w-xs max-w-[590px]"
                     placeholder="Escreva algumas informações sobre a tarefa que você quer criar"
                   />
                 </div>
@@ -312,17 +321,6 @@ const TaskGene = () => {
                   </div>
                 )}
 
-                {index !== forms.length - 1 && (
-                  <div className="form-group">
-                    <Button
-                      color="error"
-                      type="button"
-                      onClick={() => deleteForm(index)}
-                    >
-                      Excluir Formulário
-                    </Button>
-                  </div>
-                )}
                 {loading && (
                   <Spinner
                     label="Carregando..."
@@ -335,7 +333,6 @@ const TaskGene = () => {
           ))}
           {globalResponses.length > 0 && (
             <div className="form-resp">
-              <h2 className="resp-p">Respostas Globais</h2>
               {globalResponses.map((response, index) => (
                 <div key={index}>{response}</div>
               ))}
@@ -375,21 +372,21 @@ const StyledTask = styled.section`
   .form-resp {
     padding: 1.5rem;
     margin: 1rem 0;
-    color: #262626;
-    background-color: #f3eeee;
+    color: #111010;
+    background-color: #ffffff;
     padding: 1rem;
     box-shadow: var(--sombra-box);
     border-radius: var(--borda-arredondada);
   }
-  h2::before,
+  /* h2::before,
   h2::after {
     content: " 📝 ";
-  }
+  } */
 
   div h3:first-child {
     font-weight: bold;
     font-size: 1.7rem;
-    color: #1f1f9a;
+    color: #06130c;
   }
   .form-group {
     display: flex;
@@ -403,6 +400,13 @@ const StyledTask = styled.section`
     color: #cf2c2c;
    
   } */
+
+  .formart-botao {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem;
+    width: 97%;
+  }
 `;
 
 export default TaskGene;
