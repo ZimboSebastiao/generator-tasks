@@ -56,8 +56,7 @@ const TaskGene = () => {
             setLoading(true);
             const url = "https://api.openai.com/v1/chat/completions";
             const headers = {
-              Authorization:
-                "Bearer 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",
+              Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
             };
 
             const conversation = [
