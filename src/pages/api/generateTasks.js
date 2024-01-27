@@ -1,4 +1,4 @@
-// src/components/task-generator.jsx
+// Importar os módulos necessários
 import React, { useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
@@ -9,8 +9,7 @@ import { Textarea } from "@nextui-org/react";
 import dotenv from "dotenv";
 dotenv.config();
 
-const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-console.log("API Key test:", apiKey);
+process.env.OPENAI_API_KEY;
 
 // Definir as opções para o usuário escolher
 const teams = ["Hermes", "Xtend", "Apollo"];
@@ -56,33 +55,37 @@ const TaskGene = () => {
 
           if (team && type && task && info) {
             setLoading(true);
-            const url = "/api/chat"; // Use the relative URL for your API route
-            const data = {
-              model: "gpt-3.5-turbo",
-              messages: [
-                { role: "system", content: "You are a creative assistant." },
-                {
-                  role: "user",
-                  content: generateUserContent(currentForm),
-                },
-              ],
-              temperature: 0.8,
-              max_tokens: 1000,
+            const url = "https://api.openai.com/v1/chat/completions";
+            const headers = {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
             };
 
+            const conversation = [
+              { role: "system", content: "You are a creative assistant." },
+              {
+                role: "user",
+                content: generateUserContent(currentForm),
+              },
+            ];
+
             console.log("Request URL:", url);
-            console.log("Request Data:", data);
+            console.log("Request Headers:", headers);
+            console.log("Request Body:", {
+              model: "gpt-3.5-turbo",
+              messages: conversation,
+            });
 
-            const request = await axios.post(url, data);
+            const response = await axios.post(
+              url,
+              { model: "gpt-3.5-turbo", messages: conversation },
+              { headers }
+            );
 
-            // Mostrar o objeto config no console
-            console.log("Request Config:", request.config);
+            console.log("Response Status:", response.status);
+            console.log("Response Data:", response.data);
 
-            // Mostrar o status e os dados da resposta no console
-            console.log("Response Status:", request.status);
-            console.log("Response Data:", request.data);
-
-            const generatedText = request.data.choices[0].message.content;
+            const generatedText = response.data.choices[0].message.content;
             const formattedSections = formatResponse(generatedText);
 
             return {
