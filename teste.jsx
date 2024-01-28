@@ -122,10 +122,6 @@ const TaskGene = () => {
     }
   };
 
-  useEffect(() => {
-    generateTasks();
-  }, []);
-
   const generateUserContent = (form) => {
     const { task, type, info, team } = form;
     let userContent = "";
