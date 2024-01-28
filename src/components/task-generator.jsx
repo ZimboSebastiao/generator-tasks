@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-console.log("API Key test:", apiKey);
+// console.log("API Key test:", apiKey);
 
 // Definir as opções para o usuário escolher
 const teams = ["Hermes", "Xtend", "Apollo"];
