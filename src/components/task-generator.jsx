@@ -74,23 +74,29 @@ const TaskGene = () => {
             console.log("Request Data:", data);
 
             // Configurar a requisição sem especificar o agente HTTPS
-            const request = await axios.post(url, data);
+            // const request = await axios.post(url, data);
+            try {
+              const request = await axios.post(url, data);
+              console.log("Response Status:", request.status);
+              console.log("Response Data:", request.data);
 
-            // Mostrar o objeto config no console
-            console.log("Request Config:", request.config);
+              const generatedText = request.data.choices[0].message.content;
+              const formattedSections = formatResponse(generatedText);
 
-            // Mostrar o status e os dados da resposta no console
-            console.log("Response Status:", request.status);
-            console.log("Response Data:", request.data);
-
-            const generatedText = request.data.choices[0].message.content;
-            const formattedSections = formatResponse(generatedText);
-
-            return {
-              ...currentForm,
-              loading: false,
-              response: formattedSections,
-            };
+              return {
+                ...currentForm,
+                loading: false,
+                response: formattedSections,
+              };
+            } catch (error) {
+              console.error("Erro ao processar resposta:", error);
+              return {
+                ...currentForm,
+                error:
+                  "Erro ao processar resposta. Tente novamente mais tarde.",
+                loading: false,
+              };
+            }
           } else {
             return {
               ...currentForm,
@@ -100,7 +106,6 @@ const TaskGene = () => {
           }
         })
       );
-
       setForms(newForms);
       setLoading(false);
 
