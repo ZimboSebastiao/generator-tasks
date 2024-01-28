@@ -6,6 +6,7 @@ import { Select, SelectItem } from "@nextui-org/react";
 import { Button } from "@nextui-org/react";
 import { Spinner } from "@nextui-org/react";
 import { Textarea } from "@nextui-org/react";
+import https from "https";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -56,7 +57,7 @@ const TaskGene = () => {
 
           if (team && type && task && info) {
             setLoading(true);
-            const url = "/api/chat"; // Use the relative URL for your API route
+            const url = "/api/chat"; // Use o URL relativo para a sua rota da API
             const data = {
               model: "gpt-3.5-turbo",
               messages: [
@@ -66,13 +67,14 @@ const TaskGene = () => {
                   content: generateUserContent(currentForm),
                 },
               ],
-              temperature: 0.8,
-              max_tokens: 1000,
+              temperature: 0.6,
+              max_tokens: 2000,
             };
 
             console.log("Request URL:", url);
             console.log("Request Data:", data);
 
+            // Configurar a requisição sem especificar o agente HTTPS
             const request = await axios.post(url, data);
 
             // Mostrar o objeto config no console
