@@ -25,6 +25,7 @@ export default async function handler(req, res) {
   try {
     const response = await axios.post(url, data, {
       headers,
+      timeout: 120000,
       httpsAgent: new https.Agent({ rejectUnauthorized: false }),
     });
 
