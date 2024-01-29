@@ -39,9 +39,4 @@ export default async function handler(req, res) {
   }
 }
 
-export const config = {
-  api: {
-    // disables call to body parsing module while deployed
-    bodyParser: process.env.NODE_ENV !== "production",
-  },
-};
+
