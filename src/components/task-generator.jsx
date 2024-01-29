@@ -109,7 +109,6 @@ const TaskGene = () => {
       setForms(newForms);
       setLoading(false);
 
-      // Atualizar o estado de respostas globais
       const allResponses = newForms
         .filter((form) => form.response)
         .map((form) => form.response);
