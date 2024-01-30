@@ -35,15 +35,6 @@ export default async function handler(req, res) {
     }
   }
 
-<<<<<<< HEAD
-// export const config = {
-//   api: {
-//     // disables call to body parsing module while deployed
-//     bodyParser: process.env.NODE_ENV !== "production",
-//   },
-// };
-=======
   // Se todas as retentativas falharem, envie uma resposta de erro
   res.status(500).json({ error: "Erro interno do servidor." });
 }
->>>>>>> ed9d42173b69813daf3703eee178e2fc32fd1484
